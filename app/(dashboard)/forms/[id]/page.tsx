@@ -20,16 +20,15 @@ import { format, formatDistance } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 
-type BulderPageProps = {
+async function FormDetailPage({
+  params,
+}: {
   params: {
     id: string;
   };
-};
-
-async function FormDetail({ params }: BulderPageProps) {
+}) {
   const { id } = params;
   const form = await GetFormById(Number(id));
-
   if (!form) {
     throw new Error("form not found");
   }
@@ -46,19 +45,17 @@ async function FormDetail({ params }: BulderPageProps) {
 
   return (
     <>
-      <div className="py-10 border-t border-b border-muted">
+      <div className="py-10 border-b border-muted">
         <div className="flex justify-between container">
           <h1 className="text-4xl font-bold truncate">{form.name}</h1>
-          <VisitBtn shareUrl={form.shareUrl} />
+          <VisitBtn shareUrl={form.shareURL} />
         </div>
       </div>
-
-      <div className="py-4 boder-b border-muted">
+      <div className="py-4 border-b border-muted">
         <div className="container flex gap-2 items-center justify-between">
-          <FormLinkShare shareUrl={form.shareUrl} />
+          <FormLinkShare shareUrl={form.shareURL} />
         </div>
       </div>
-
       <div className="w-full pt-8 gap-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 container">
         <StatsCard
           title="Total visits"
@@ -79,7 +76,7 @@ async function FormDetail({ params }: BulderPageProps) {
         />
 
         <StatsCard
-          title="Total visits"
+          title="Submission rate"
           icon={<HiCursorClick className="text-green-600" />}
           helperText="Visits that result in form submission"
           value={submissionRate.toLocaleString() + "%" || ""}
@@ -90,8 +87,8 @@ async function FormDetail({ params }: BulderPageProps) {
         <StatsCard
           title="Bounce rate"
           icon={<TbArrowBounce className="text-red-600" />}
-          helperText="Visits that leave without inteacting"
-          value={submissionRate.toLocaleString() + "%" || ""}
+          helperText="Visits that leaves without interacting"
+          value={bounceRate.toLocaleString() + "%" || ""}
           loading={false}
           className="shadow-md shadow-red-600"
         />
@@ -104,18 +101,18 @@ async function FormDetail({ params }: BulderPageProps) {
   );
 }
 
-export default FormDetail;
+export default FormDetailPage;
 
-type Row = {
-  [key: string]: string;
-} & {
+type Row = { [key: string]: string } & {
   submittedAt: Date;
 };
 
 async function SubmissionsTable({ id }: { id: number }) {
   const form = await GetFormWithSubmissions(id);
 
-  if (!form) throw new Error("Form not found");
+  if (!form) {
+    throw new Error("form not found");
+  }
 
   const formElements = JSON.parse(form.content) as FormElementInstance[];
   const columns: {
@@ -135,9 +132,9 @@ async function SubmissionsTable({ id }: { id: number }) {
       case "CheckboxField":
         columns.push({
           id: element.id,
-          type: element.type,
           label: element.extraAttributes?.label,
           required: element.extraAttributes?.required,
+          type: element.type,
         });
         break;
       default:
@@ -171,7 +168,6 @@ async function SubmissionsTable({ id }: { id: number }) {
               </TableHead>
             </TableRow>
           </TableHeader>
-
           <TableBody>
             {rows.map((row, index) => (
               <TableRow key={index}>
@@ -206,7 +202,7 @@ function RowCell({ type, value }: { type: ElementsType; value: string }) {
       node = <Badge variant={"outline"}>{format(date, "dd/MM/yyyy")}</Badge>;
       break;
     case "CheckboxField":
-      const checked = value === "true" ? true : false;
+      const checked = value === "true";
       node = <Checkbox checked={checked} disabled />;
       break;
   }
