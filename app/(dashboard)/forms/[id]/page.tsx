@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/table";
 import { format, formatDistance } from "date-fns";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 
 type BulderPageProps = {
   params: {
@@ -198,15 +199,15 @@ async function SubmissionsTable({ id }: { id: number }) {
 function RowCell({ type, value }: { type: ElementsType; value: string }) {
   let node: ReactNode = value;
 
-  switch(type) {
+  switch (type) {
     case "DateField":
-      if(!value) break;
+      if (!value) break;
       const date = new Date(value);
       node = <Badge variant={"outline"}>{format(date, "dd/MM/yyyy")}</Badge>;
       break;
     case "CheckboxField":
-      const checked = value ==="true" ? true: false
-      node
+      const checked = value === "true" ? true : false;
+      node = <Checkbox checked={checked} disabled />;
       break;
   }
 
